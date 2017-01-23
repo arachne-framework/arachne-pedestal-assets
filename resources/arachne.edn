@@ -1,0 +1,4 @@
+[{:arachne/name :org.arachne-framework/arachne-pedestal-assets
+  :arachne/schema arachne.arachne-pedestal-assets/schema
+  :arachne/configure arachne.arachne-pedestal-assets/configure
+  :arachne/dependencies [:org.arachne-framework/arachne-core]}]
