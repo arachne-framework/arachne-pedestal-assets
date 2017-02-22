@@ -5,7 +5,7 @@
  :deps [[org.clojure/clojure "1.9.0-alpha14" :scope "provided"]
         [org.arachne-framework/arachne-assets "0.1.0-master-0050-d5b8405"
          :exclusions [commons-codec]]
-        [org.arachne-framework/arachne-pedestal "0.1.0-master-0053-63e5b5e"
+        [org.arachne-framework/arachne-pedestal "0.1.0-master-0054-c7a9eae"
          :exclusions [org.clojure/core.async
                       org.clojure/data.priority-map]]
         [adzerk/boot-test "1.1.2" :scope "test"]
