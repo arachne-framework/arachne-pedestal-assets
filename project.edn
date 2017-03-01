@@ -1,14 +1,13 @@
 {:project org.arachne-framework/pedestal-assets
- :version {:major 0, :minor 1, :patch 0, :qualifier :dev}
+ :version {:major 0, :minor 2, :patch 0, :qualifier :dev}
  :description "A module to serve Arachne assets via Pedestal, linking up the Pedestal and Asset modules."
  :license {"Apache Software License 2.0" "http://www.apache.org/licenses/LICENSE-2.0"}
  :deps [[org.clojure/clojure "1.9.0-alpha14" :scope "provided"]
-        [org.arachne-framework/arachne-assets "0.1.0-master-0050-d5b8405"
+        [org.arachne-framework/arachne-assets "0.2.0-master-0051-51a1e7a"
          :exclusions [commons-codec]]
-        [org.arachne-framework/arachne-pedestal "0.1.0-master-0054-c7a9eae"
+        [org.arachne-framework/arachne-pedestal "0.2.0-master-0058-bb9484c"
          :exclusions [org.clojure/core.async
                       org.clojure/data.priority-map]]
-        [adzerk/boot-test "1.1.2" :scope "test"]
         [org.clojure/test.check "0.9.0" :scope "test"
          :exclusions [org.clojure/clojure]]
         [org.clojure/tools.namespace "0.2.11" :scope "test"

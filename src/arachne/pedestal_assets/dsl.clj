@@ -11,67 +11,59 @@
            [arachne.pedestal.dsl :as ped-dsl]
            [arachne.core.dsl :as core]))
 
-(defn- transact-interceptor
-  "Transact an interceptor to the context config, returning its eid. Arachne ID may be nil."
-  [arachne-id index]
-  (let [tid (cfg/tempid)
-        entity (util/mkeep {:db/id tid
-                            :arachne/id arachne-id
-                            :arachne.pedestal-assets.fileset-interceptor/index? (boolean index)
-                            :arachne.component/constructor :arachne.pedestal-assets/fileset-interceptor})]
-    (script/transact [entity] tid)))
-
 (s/def ::index? boolean?)
 
-(defdsl interceptor
-  "Define an interceptor that is also an asset pipeline Consumer. Serves assets from the
-   associated pipeline as HTTP resources.
+(defdsl interceptor-component
+  "Define a component which is a consumer in the asset pipeline, and also a Pedestal interceptor
+   that serves resources in its most recent fileset.
 
    Arguments are:
 
-   - arachne id (optional) - the Arachne ID of the interceptor component
-   - options (optional) - A map (or kwargs) of additional options.
+      - options (optional) - A map (or kwargs) of additional options.
 
    Currently supported options are:
 
-   - :priority - the priority relative to other interceptors defined at the same path. If omitted,
-   defaults to the lexical order of the config script
-   - :index? - Sets to true if requests to a directory name should attempt to resolve an
-   index.html file within the directory.
+      - :index? - Sets to true if requests to a directory name should attempt to resolve an
+        index.html file within the directory.
 
-   Note that the asset interceptor should always be installed to the server root; attachment to
-   other points in the routing table is (currently) not supported. This function should not be
-   called inside a `http/context`."
-  (s/cat
-    :arachne-id (s/? ::core/arachne-id)
-    :opts (util/keys** :opt-un [::ped-dsl/priority ::index?]))
-  [<arachne-id> & opts]
-  (let [priority (-> &args :opts second :priority)
-        args ["/"
-              (transact-interceptor (:arachne-id &args)
-                                    (:index? (second (:opts &args))))
-              (when priority
-                {:priority priority})]
-        args (filter identity args)]
-    (apply ped-dsl/interceptor args)))
+   Returns the entity ID of the newly-defined component.
 
+   Note that this form only creates the interceptor component. You must still install it as an
+   interceptor on the server using `arachne.pedestal.dsl/interceptor`, and wire it to an asset
+   pipeline using `arachne.assets.dsl/pipeline`.
 
-(comment
+   Note that files will always be found within the fileset by their full url path: this component
+   does not (yet) relativize paths to the route to which it is attached. As such, the behavior of
+   this component will be most predictable if it is added directly to the root server."
+  (s/cat :opts (util/keys** :opt-un [::index?]))
+  [& opts]
+  (let [tid (cfg/tempid)
+        entity (util/mkeep {:db/id tid
+                            :arachne.pedestal-assets.fileset-interceptor/index? (:index? (second (:opts &args)))
+                            :arachne.component/constructor :arachne.pedestal-assets/fileset-interceptor})]
+    (script/transact [entity] tid)))
 
-  ;;;;; or
+(defdsl interceptor
+  "Define an asset interceptor component and install it in the Pedestal routing structure in a single step.
 
-  (aa/input-dir :my/files "input/files")
+   This is functionally identical to calling:
 
-  (ped/server :my/server 8080
+       (arachne.pedestal.dsl/interceptor (arachne.pedestal-assets/asset-interceptor))
 
-    (ped-assets/interceptor )
+   Arguments are:
 
-    (ped/interceptor "/" )
+       - options (optional) - A map (or kwargs) of additional options.
 
-    )
+   Currently supported options are:
 
-  (aa/pipeline [:my/files :my/server-assets])
+       - :priority - the priority relative to other interceptors defined at the same path. If omitted,
+         defaults to the lexical order of the config script
+       - :index? - Sets to true if requests to a directory name should attempt to resolve an
+         index.html file within the directory.
 
-
-
-  )
+   Always installs to the server root. Returns the eid of the interceptor component."
+  (s/cat :opts (util/keys** :opt-un [::ped-dsl/priority ::index?]))
+  [& opts]
+  (let [eid (interceptor-component (second (:opts &args)))]
+    (apply ped-dsl/interceptor eid opts)
+    eid))

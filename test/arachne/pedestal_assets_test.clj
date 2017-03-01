@@ -18,34 +18,52 @@
 
 (defn asset-interceptor-cfg []
 
-  (a/runtime :test/rt [:test/server])
+  (a/id :test/rt (a/runtime [:test/server]))
 
-  (aa/input-dir :test/input "test/test-assets")
+  (a/id :test/input (aa/input-dir "test/test-assets"))
 
-  (p/server :test/server 8080
+  (a/id :test/ai (pa/interceptor-component :index? true))
 
-    (pa/interceptor :test/ai :index? true)
+  (a/id :test/server
+    (p/server 8080
+      (p/interceptor :test/ai)
+      ))
 
-    )
+  (aa/pipeline [:test/input :test/ai])
+
+  )
+
+(defn asset-interceptor-cfg-streamlined []
+
+  (a/id :test/rt (a/runtime [:test/server]))
+
+  (a/id :test/input (aa/input-dir "test/test-assets"))
+
+  (a/id :test/server
+    (p/server 8080
+      (a/id :test/ai (pa/interceptor :index? true))))
 
   (aa/pipeline [:test/input :test/ai])
 
   )
 
 (deftest ^:integration asset-interceptor-test
-  (let [cfg (core/build-config [:org.arachne-framework/pedestal-assets]
-              `(asset-interceptor-cfg) true)
-        rt (core/runtime cfg :test/rt)]
-    (let [rt (c/start rt)]
-      (try
+  (let [cfg-a (core/build-config [:org.arachne-framework/pedestal-assets]
+                `(asset-interceptor-cfg) true)
+        cfg-b (core/build-config [:org.arachne-framework/pedestal-assets]
+                `(asset-interceptor-cfg-streamlined) true)]
+    (doseq [cfg [cfg-a cfg-b]]
+      (let [rt (core/runtime cfg :test/rt)
+            rt (c/start rt)]
+        (try
 
-        (is (= "<p>index</p>" (slurp "http://localhost:8080")))
-        (is (= "<p>index</p>" (slurp "http://localhost:8080/index.html")))
-        (is (= "<p>file</p>" (slurp "http://localhost:8080/dir1/file.html")))
+          (is (= "<p>index</p>" (slurp "http://localhost:8080")))
+          (is (= "<p>index</p>" (slurp "http://localhost:8080/index.html")))
+          (is (= "<p>file</p>" (slurp "http://localhost:8080/dir1/file.html")))
 
-        (let [result (try (client/get "http://localhost:8080/no-such-file.html")
-                          (catch Exception e (ex-data e)))]
-          (is (= 404 (:status result))))
+          (let [result (try (client/get "http://localhost:8080/no-such-file.html")
+                            (catch Exception e (ex-data e)))]
+            (is (= 404 (:status result))))
 
 
-        (finally (c/stop rt))))))
+          (finally (c/stop rt)))))))
