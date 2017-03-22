@@ -3,9 +3,9 @@
  :description "A module to serve Arachne assets via Pedestal, linking up the Pedestal and Asset modules."
  :license {"Apache Software License 2.0" "http://www.apache.org/licenses/LICENSE-2.0"}
  :deps [[org.clojure/clojure "1.9.0-alpha14" :scope "provided"]
-        [org.arachne-framework/arachne-assets "0.2.0-master-0052-8d2ae0c"
+        [org.arachne-framework/arachne-assets "0.2.0-master-0055-e493966"
          :exclusions [commons-codec]]
-        [org.arachne-framework/arachne-pedestal "0.2.0-master-0059-7f13b97"
+        [org.arachne-framework/arachne-pedestal "0.2.0-master-0060-3331c9d"
          :exclusions [org.clojure/core.async
                       org.clojure/data.priority-map]]
         [org.clojure/test.check "0.9.0" :scope "test"
